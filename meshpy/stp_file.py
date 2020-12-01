@@ -71,7 +71,12 @@ class StablePoseFile:
                       data[i+2][2]], [data[i+3][0], data[i+3][1], data[i+3][2]]]
                 r = np.array(r).astype(np.float64)
                 x0 = np.array([data[i+4][1], data[i+4][2], data[i+4][3]]).astype(np.float64)
-                stable_poses.append(sp.StablePose(p, r, x0))
+                try:
+                        identifier = data[i+5][1]
+                except:
+                        Warning("No identifier in data. Setting to 0")
+                        stp_id=0
+                stable_poses.append(sp.StablePose(p, r, x0,stp_id=identifier))
         return stable_poses
 
     def write(self, stable_poses, min_prob=0):
@@ -89,7 +94,7 @@ class StablePoseFile:
         R_list = []
         for pose in stable_poses:
             if pose.p >= min_prob:
-                R_list.append([pose.p, pose.r, pose.x0])
+                R_list.append([pose.p, pose.r, pose.x0,pose.id])
 
         f = open(self.filepath_[:-4] + ".stp", "w")
         f.write("#############################################################\n")
@@ -115,6 +120,7 @@ class StablePoseFile:
             f.write("  %f %f %f\n" %(R_list[i][1][1][0], R_list[i][1][1][1], R_list[i][1][1][2]))
             f.write("  %f %f %f\n" %(R_list[i][1][2][0], R_list[i][1][2][1], R_list[i][1][2][2]))
             f.write("x0 %f %f %f\n" %(R_list[i][2][0], R_list[i][2][1], R_list[i][2][2]))
+            f.write("id %s\n" %R_list[i][3])
         f.write("\n\n")
         f.close()
 
